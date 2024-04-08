@@ -1,0 +1,6 @@
+RecommendSystemApi_HostAddress = http://localhost:5281
+
+GET {{RecommendSystemApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
