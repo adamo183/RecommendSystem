@@ -5,7 +5,7 @@ using RecommendAlgorithm.VectorComparer;
 
 namespace RecommendAlgorithm.Recommendation
 {
-    public class UserBasedRecommender : IBuildRecomendation, IGetRecommendation<Item>
+    public class UserBasedRecommender : IBuildRecomendation, IGetRecommendation<Item, UserToUserSimilarity>
     {
         public UserBasedRecommender(List<Rating> userItemTable, List<User> user, List<Item> items)
         {
@@ -41,7 +41,15 @@ namespace RecommendAlgorithm.Recommendation
                     if (user.UserId != userCompared.UserId)
                     {
                         var comparedUserRating = UserRating.FirstOrDefault(x => x.Key == userCompared.UserId).Value;
-                        var score = vectorComparer.CompareVector(basedUserRating.ToArray(), comparedUserRating.ToArray());
+                        double score = 0;
+                        if (basedUserRating.SequenceEqual(comparedUserRating))
+                        {
+                            score = 0;
+                        }
+                        else
+                        { 
+                            score = vectorComparer.CompareVector(basedUserRating.ToArray(), comparedUserRating.ToArray());
+                        }
 
                         SimiliarUser.Add(userCompared.UserId, score);
                     }
@@ -56,18 +64,17 @@ namespace RecommendAlgorithm.Recommendation
             }
         }
 
-        public List<Item> GetRecommendation(int userId, int numberOfRecommendToGet)
+        public List<Item> GetRecommendation(int userId, int numberOfRecommendToGet, UserToUserSimilarity similarity)
         {
             List<string> RecommendationKeys = new List<string>();
             var currentUserRecommend = UserItemTable.Where(x => x.User == userId && x.RatingScore > 0).Select(x => x.Item);
-            var similiarUser = UserSimilarity.FirstOrDefault(x => x.User == userId);
-            if (similiarUser == null)
+
+            if (similarity == null)
             {
                 return new List<Item>();
             }
 
-
-            foreach (var item in similiarUser.SimilarUser)
+            foreach (var item in similarity.SimilarUser)
             {
                 if (RecommendationKeys.Count() > numberOfRecommendToGet)
                 {
