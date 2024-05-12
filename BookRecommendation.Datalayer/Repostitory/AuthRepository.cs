@@ -1,6 +1,8 @@
 ﻿using BookRecommendation.Datalayer.Interfaces;
 using BookRecommendation.Datalayer.Model;
 using BookRecommendation.Datalayer.MongoModel;
+using BookRecommendation.Shared.Model;
+using BookRecommendation.Shared.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;

@@ -11,6 +11,9 @@ namespace BookRecommendation.Datalayer.MongoModel
         public string ConnectionURI { get; set; } = null!;
         public string DatabaseName { get; set; } = null!;
         public string UserCollection { get; set; } = null!;
-        public string UserPaswordCollection { get; set; } = null!;
+        public string UserPasswordCollection { get; set; } = null!;
+        public string BooksCollection { get; set; } = null!;
+        public string RatingsCollection { get; set; } = null!;
+        public string UserToUserCollection { get; set; } = null!;
     }
 }

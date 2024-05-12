@@ -1,4 +1,7 @@
-﻿using BookRecommendation.Datalayer.Interfaces;
+﻿using AutoMapper;
+using BookRecommendation.Datalayer.Interfaces;
+using BookRecommendation.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookRecommendation.Server.Controllers
@@ -8,9 +11,11 @@ namespace BookRecommendation.Server.Controllers
     public class UserController : ControllerBase
     {
         private IUserRepository _userRepository;
-        public UserController(IUserRepository userRepository)
+        private IMapper _mapper;
+        public UserController(IUserRepository userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -18,6 +23,14 @@ namespace BookRecommendation.Server.Controllers
         {
             var allUsers = await _userRepository.GetUsers();
             return Ok(allUsers);
+        }
+
+        [HttpGet("{userId}/books")]
+        public async Task<ActionResult> GetUserBooks(int userId)
+        {
+            var userBook = await _userRepository.FindUserBookByUserId(userId);
+            var booksDto = _mapper.Map<List<BookDto>>(userBook);
+            return Ok(booksDto);
         }
     }
 }

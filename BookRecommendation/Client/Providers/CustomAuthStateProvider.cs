@@ -6,48 +6,75 @@ using System.Text.Json;
 
 namespace BookRecommendation.Client.Providers
 {
-    public class CustomAuthStateProvider : AuthenticationStateProvider
+    public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly ILocalStorageService _localStorage;
-        private readonly HttpClient _http;
 
-        public CustomAuthStateProvider(ILocalStorageService localStorage, HttpClient http)
+        public CustomAuthenticationStateProvider(ILocalStorageService localStorage)
         {
             _localStorage = localStorage;
-            _http = http;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            string token = await _localStorage.GetItemAsStringAsync("token");
+            var savedToken = await _localStorage.GetItemAsync<string>("token");
 
-            var identity = new ClaimsIdentity();
-            _http.DefaultRequestHeaders.Authorization = null;
-
-            if (!string.IsNullOrEmpty(token))
+            if (string.IsNullOrWhiteSpace(savedToken))
             {
-                identity = new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
-                _http.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token.Replace("\"", ""));
+                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
             }
 
-            var user = new ClaimsPrincipal(identity);
-            var state = new AuthenticationState(user);
-
-            NotifyAuthenticationStateChanged(Task.FromResult(state));
-
-            return state;
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseTokenClaims(savedToken), "jwt")));
         }
 
-        public static IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
+        public void SetUserAuthenticated(string email)
         {
+            var authUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, email) }, "apiauth"));
+            var authState = Task.FromResult(new AuthenticationState(authUser));
+            NotifyAuthenticationStateChanged(authState);
+        }
+
+        public void SetUserLoggedOut()
+        {
+            var anonUser = new ClaimsPrincipal(new ClaimsIdentity());
+            var authState = Task.FromResult(new AuthenticationState(anonUser));
+            NotifyAuthenticationStateChanged(authState);
+        }
+
+        private IEnumerable<Claim> ParseTokenClaims(string jwt)
+        {
+            var claims = new List<Claim>();
             var payload = jwt.Split('.')[1];
             var jsonBytes = ParseBase64WithoutPadding(payload);
             var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
-            return keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString()));
+
+            keyValuePairs.TryGetValue(ClaimTypes.Role, out object roles);
+
+            if (roles != null)
+            {
+                if (roles.ToString().Trim().StartsWith("["))
+                {
+                    var parsedRoles = JsonSerializer.Deserialize<string[]>(roles.ToString());
+
+                    foreach (var parsedRole in parsedRoles)
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, parsedRole));
+                    }
+                }
+                else
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, roles.ToString()));
+                }
+
+                keyValuePairs.Remove(ClaimTypes.Role);
+            }
+
+            claims.AddRange(keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString())));
+
+            return claims;
         }
 
-        private static byte[] ParseBase64WithoutPadding(string base64)
+        private byte[] ParseBase64WithoutPadding(string base64)
         {
             switch (base64.Length % 4)
             {

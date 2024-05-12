@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
-    <ProjectReference Include="..\RecommendAlgorithm\AlgorithmLayer.csproj" />
+    <ProjectReference Include="..\DataLayer\RecommendSystem.Datalayer.csproj" />
+    <ProjectReference Include="..\RecommendAlgorithm\RecommendSystem.Algorithm.csproj" />
   </ItemGroup>
 
   <ItemGroup>

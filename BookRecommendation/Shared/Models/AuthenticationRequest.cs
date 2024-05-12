@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BookRecommendation.Datalayer.Model
+namespace BookRecommendation.Shared.Model
 {
     public class AuthenticationRequest
     {
