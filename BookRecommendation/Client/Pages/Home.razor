@@ -9,6 +9,7 @@
 @using BookRecommendation.Shared.Models;
 
 @inject ILocalStorageService LocalStorage
+@inject NavigationManager navigationManager;
 
 <PageTitle>Twoje książki</PageTitle>
 
@@ -20,7 +21,7 @@
     <Template Context="book">
         <RadzenCard Style="flex: 1;">
             <RadzenStack AlignItems="AlignItems.Center" Gap="1rem">
-                <RadzenImage Path="@book.Url1" Style="width: 80px; height: 80px; border-radius: 50%" AlternateText="@(book?.Name)" />
+                <RadzenImage Path="@book.Url1" Style="width: 80px; height: 80px; border-radius: 50%" AlternateText="@(book?.Name)" Click="@(args => GoToBookDetails(book.BookId))" />
                 <RadzenStack Gap="0">
                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.P" TextAlign="TextAlign.Center">@(book?.Name)</RadzenText>
                     <RadzenText TextStyle="TextStyle.Body2" TextAlign="TextAlign.Center">@(book?.Author)</RadzenText>
@@ -31,21 +32,50 @@
 </RadzenDataList>
 
 <RadzenPager Density="@Density.Compact" HorizontalAlign="HorizontalAlign.Center" Count="count" PageSize="@pageSize" PageNumbersCount="6" PageChanged="@PageChanged" />
+
+@if (userRecommendation != null && userRecommendation.Count() > 0)
+{
+    <h4 class="rz-text-h4 rz-pt-8">Książki które mogą Ci się spodobać</h4>
+}
+<RadzenDataList WrapItems="true" AllowPaging="false" Data="@userRecommendationPaged" TItem="BookDto">
+    <Template Context="book">
+        <RadzenCard Style="flex: 1;">
+            <RadzenStack AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenImage Path="@book.Url1" Style="width: 80px; height: 80px; border-radius: 50%" AlternateText="@(book?.Name)" Click="@(args => GoToBookDetails(book.BookId))"/>
+                <RadzenStack Gap="0">
+                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.P" TextAlign="TextAlign.Center">@(book?.Name)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body2" TextAlign="TextAlign.Center">@(book?.Author)</RadzenText>
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+    </Template>
+</RadzenDataList>
+
+<RadzenPager Density="@Density.Compact" HorizontalAlign="HorizontalAlign.Center" Count="countRecommendation" PageSize="@pageSizeRecommend" PageNumbersCount="6" PageChanged="@PageRecommendationChanged" />
+
 @code {
     public int pageSize = 5;
+    public int pageSizeRecommend = 5;
     public int count;
+    public int countRecommendation;
     public int userId = 0;
     public List<BookDto> userBook { get; set; }
     public IEnumerable<BookDto> userBookPaged { get; set; }
 
     public List<BookDto> userRecommendation { get; set; }
+    public IEnumerable<BookDto> userRecommendationPaged { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         userId = await LocalStorage.GetItemAsync<int>("userId");
         userBook = await userService.GetUserBooks(userId);
+        userRecommendation = await userService.GetUserRecommendation(userId);
+
         userBookPaged = GetBooks(0, pageSize);
+        userRecommendationPaged = GetRecommendation(0, pageSizeRecommend);
+
         count = userBook.Count();
+        countRecommendation = userRecommendation.Count();
     }
 
     void PageChanged(PagerEventArgs args)
@@ -56,5 +86,20 @@
     List<BookDto> GetBooks(int skip, int take)
     {
         return userBook.Skip(skip).Take(take).ToList();
+    }
+
+    void PageRecommendationChanged(PagerEventArgs args)
+    {
+        userRecommendationPaged = GetRecommendation(args.Skip, args.Top);
+    }
+
+    List<BookDto> GetRecommendation(int skip, int take)
+    {
+        return userRecommendation.Skip(skip).Take(take).ToList();
+    }
+
+    public void GoToBookDetails(string bookId)
+    {
+        navigationManager.NavigateTo($"book/{bookId}");
     }
 }

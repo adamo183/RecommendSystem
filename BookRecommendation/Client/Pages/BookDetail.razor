@@ -1,0 +1,54 @@
+﻿@page "/book/{bookId}"
+
+@attribute [Authorize]
+@inject IUserServices userService;
+
+@using Microsoft.AspNetCore.Authorization
+@using BookRecommendation.Shared.Models;
+@using BookRecommendation.Client.Interfaces;
+<h3>Szczegóły książki @BookId</h3>
+
+@if (bookModel != null)
+{
+    <RadzenRow RowGap="0">
+        <RadzenColumn SizeSM="6">
+            <RadzenImage Path="@bookModel.Url3"/>
+        </RadzenColumn>
+        <RadzenColumn SizeSM="6">
+            <RadzenCard Class="rz-my-12 rz-mx-auto" Style="max-width: 420px">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="1rem" Class="rz-p-4">
+                    <RadzenStack Gap="0">
+                        <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Nazwa</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body1"><b>@(bookModel?.Name)</b></RadzenText>
+                        <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-4 rz-mb-0">Autor</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body1"><b>@bookModel?.Author</b></RadzenText>
+                    </RadzenStack>
+                </RadzenStack>
+                <RadzenCard class="rz-background-color-primary-light rz-shadow-0 rz-border-radius-0 rz-p-8" style="margin: 1rem calc(-1 * var(--rz-card-padding));">
+                    <RadzenText TextStyle="TextStyle.H6" class="rz-color-on-primary-light"><strong>Informacje</strong></RadzenText>
+                    <RadzenRow RowGap="0">
+                        <RadzenColumn SizeSM="8">
+                            <RadzenText TextStyle="TextStyle.Overline" class="rz-color-on-primary-light rz-display-flex rz-mt-4 rz-mb-0">Rok</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body1" class="rz-color-on-primary-light"><b>@(bookModel?.Year)</b></RadzenText>
+                            <RadzenText TextStyle="TextStyle.Overline" class="rz-color-on-primary-light rz-display-flex rz-mt-4 rz-mb-0">Wydawnictwo</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body1" class="rz-color-on-primary-light"><b>@(bookModel?.Publlisher)</b></RadzenText>
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenCard>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+}
+
+
+@code {
+    [Parameter]
+    public string BookId { get; set; }
+
+    public BookDto bookModel { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        bookModel = await userService.GetBookById(BookId);
+    }
+}

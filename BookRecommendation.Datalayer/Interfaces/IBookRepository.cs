@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 
 namespace BookRecommendation.Datalayer.Interfaces
 {
-    public interface IRecommendationRepository
+    public interface IBookRepository
     {
-        public Task<RecommendationDto> GetRecommendationsToUser(int userId);
+        public Task<List<BookDb>> GetBookByIds(List<string> booksIds);
+        public Task<BookDb> GetBookById(string bookId);
     }
 }

@@ -1,7 +1,9 @@
 ﻿@page "/"
 
-@attribute [Authorize]
+@inject NavigationManager navigationManager;
+@inject ILocalStorageService LocalStorage;
 
+@using Blazored.LocalStorage
 @using Microsoft.AspNetCore.Authorization
 
 <PageTitle>Index</PageTitle>
@@ -11,3 +13,20 @@
 Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+@code {
+    int? userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = await LocalStorage.GetItemAsync<int?>("userId");
+        if (userId == 0 || userId == null)
+        {
+            navigationManager.NavigateTo("login");
+        }
+        else
+        {
+            navigationManager.NavigateTo("home");
+        }
+    }
+}

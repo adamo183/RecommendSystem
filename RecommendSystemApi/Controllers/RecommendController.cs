@@ -5,11 +5,13 @@ using MongoDB.Driver;
 using RecommendAlgorithm.Models;
 using RecommendAlgorithm.Recommendation;
 using RecommendAlgorithm.SimiliarityModel;
+using RecommendSystem.Api.OutputModel;
 using RecommendSystem.ReadFile;
 using RecommendSystemApi.Interfaces;
 
 namespace RecommendSystemApi.Controllers
 {
+    [Route("api/[controller]")]
     public class RecommendController : Controller
     {
         public IDataServices DataServices { get; set; }
@@ -18,7 +20,7 @@ namespace RecommendSystemApi.Controllers
         MongoDataRepository dataset;
         UserBasedRecommender userBasedRecommend;
         const string databaseURI = "mongodb://localhost:27017";
-        const string databaseName = "recommendSystem";
+        const string databaseName = "bookview";
 
         public RecommendController(IDataServices dataServices)
         {
@@ -29,7 +31,7 @@ namespace RecommendSystemApi.Controllers
         }
 
 
-        [HttpGet("recommendation/user/{userId}/itemToGet/{itemToGet}")]
+        [HttpGet("user/{userId}/itemToGet/{itemToGet}")]
         public IActionResult GetRecommendationToUser(int userId, int itemToGet)
         {
             var filter = Builders<UserToUserSimilarity>.Filter.Eq(x => x.User, userId);
@@ -40,7 +42,12 @@ namespace RecommendSystemApi.Controllers
             }
 
             var recommendations = userBasedRecommend.GetRecommendation(userId, itemToGet, simillarUser);
-            return Ok(recommendations);
+            UserBasedRecommendationDto recommendationToReturn = new UserBasedRecommendationDto()
+            {
+                 UserId = userId,
+                 RecommendationList = recommendations.Select(x => x.ItemName).ToList(),
+            };
+            return Ok(recommendationToReturn);
         }
 
         [HttpPost("recommendation/build")]

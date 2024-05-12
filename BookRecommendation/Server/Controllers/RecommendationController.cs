@@ -1,5 +1,7 @@
-﻿using BookRecommendation.Client.Interfaces;
+﻿using AutoMapper;
+using BookRecommendation.Client.Interfaces;
 using BookRecommendation.Datalayer.Interfaces;
+using BookRecommendation.Datalayer.MongoModel;
 using BookRecommendation.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,16 +13,28 @@ namespace BookRecommendation.Server.Controllers
     public class RecommendationController : ControllerBase
     {
         private IRecommendationRepository _recommendationRepository;
-        public RecommendationController(IRecommendationRepository recommendationRepository) 
+        private IBookRepository _bookRepository;
+        private IMapper _mapper;
+
+        public RecommendationController(IRecommendationRepository recommendationRepository, IBookRepository bookRepository, IMapper mapper) 
         {
             _recommendationRepository = recommendationRepository;
+            _bookRepository = bookRepository;
+            _mapper = mapper;
         }
 
-        [HttpGet("user/{userId}/recommendation")]
+        [HttpGet("user/{userId}")]
         public async Task<ActionResult> GetUserRecommendation(int userId)
         {
             var userRecommendation = await _recommendationRepository.GetRecommendationsToUser(userId);
-            return Ok(userRecommendation);
+            if (userRecommendation == null || userRecommendation.RecommendationList.Count() == 0)
+            {
+                return Ok(new List<BookDto>());
+            }
+
+            List<BookDb> bookToRecommend = await _bookRepository.GetBookByIds(userRecommendation.RecommendationList);
+            List<BookDto> mappedBooks = _mapper.Map<List<BookDto>>(bookToRecommend);
+            return Ok(mappedBooks);
         }
     }
 }

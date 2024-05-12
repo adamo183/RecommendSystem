@@ -22,6 +22,9 @@ builder.Services.Configure<JSONWebTokensSettings>(builder.Configuration.GetSecti
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IRecommendationRepository, RecommendationRepository>();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+
 builder.Services.AddHttpClient();
 builder.Services.AddAuthentication(options =>
 {

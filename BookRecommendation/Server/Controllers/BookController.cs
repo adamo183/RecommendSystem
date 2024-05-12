@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using BookRecommendation.Datalayer.Interfaces;
+using BookRecommendation.Shared.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BookRecommendation.Server.Controllers
 {
@@ -6,9 +9,21 @@ namespace BookRecommendation.Server.Controllers
     [ApiController]
     public class BookController : ControllerBase
     {
-        public IActionResult GetUserBook(int userId)
+        private IBookRepository _bookRepository;
+        private IMapper _mapper;
+
+        public BookController(IBookRepository bookRepository, IMapper mapper)
         {
-            return Ok();
+            _bookRepository = bookRepository;
+            _mapper = mapper;
+        }
+
+        [HttpGet("{bookId}")]
+        public async Task<IActionResult> GetBookById(string bookId)
+        {
+            var book = await _bookRepository.GetBookById(bookId);
+            var mappedBook = _mapper.Map<BookDto>(book);
+            return Ok(mappedBook);
         }
     }
 }

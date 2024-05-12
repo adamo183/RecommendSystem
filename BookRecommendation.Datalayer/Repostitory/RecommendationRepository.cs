@@ -13,13 +13,13 @@ namespace BookRecommendation.Datalayer.Repostitory
             HttpClient = httpClient;
         }
 
-        public async Task<List<RecommendationDto>> GetRecommendationsToUser(int userId)
+        public async Task<RecommendationDto> GetRecommendationsToUser(int userId)
         {
-            var url = $"http://localhost:5281/api/recommendation/user/{userId}/itemToGet/20";
+            var url = $"http://localhost:5281/api/recommend/user/{userId}/itemToGet/20";
             var response = await HttpClient.GetAsync(url);
 
             var responseString = await response.Content.ReadAsStringAsync();
-            var parsedObject = Newtonsoft.Json.JsonConvert.DeserializeObject<List<RecommendationDto>>(responseString);
+            var parsedObject = Newtonsoft.Json.JsonConvert.DeserializeObject<RecommendationDto>(responseString);
             return parsedObject;
         }
     }
