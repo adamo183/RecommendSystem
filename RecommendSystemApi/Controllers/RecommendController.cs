@@ -50,7 +50,8 @@ namespace RecommendSystemApi.Controllers
             return Ok(recommendationToReturn);
         }
 
-        [HttpPost("recommendation/build")]
+        [Route("recommendation/build")]
+        [HttpPost]
         public IActionResult PostBuildSimulatiry()
         {
             var filter = Builders<List<UserToUserSimilarity>>.Filter.Empty;

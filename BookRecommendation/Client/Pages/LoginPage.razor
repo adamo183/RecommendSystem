@@ -21,11 +21,11 @@
         <div class="card-body">
             <EditForm Model="@user" OnValidSubmit="HandleLogin">
                 <div class="input-group row mt-2">
-                    <label class="col-12 col-md-4 p-0" for="userName">Email:</label>
+                    <label class="col-12 col-md-4 p-0" for="userName">Login:</label>
                     <InputText id="userName" class="col-12 col-md-8 login-field" @bind-Value="user.Login"></InputText>
                 </div>
                 <div class="input-group row mt-2">
-                    <label class="col-12 col-md-4 p-0" for="password">Password:</label>
+                    <label class="col-12 col-md-4 p-0" for="password">Hasło:</label>
                     <InputText type="password" id="password" class="col-12 col-md-8 login-field" @bind-Value="@user.Password"></InputText>
                 </div>
                 <div class="input-group row mt-2">

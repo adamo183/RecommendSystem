@@ -67,7 +67,7 @@ namespace RecommendAlgorithm.Recommendation
         public List<Item> GetRecommendation(int userId, int numberOfRecommendToGet, UserToUserSimilarity similarity)
         {
             List<string> RecommendationKeys = new List<string>();
-            var currentUserRecommend = UserItemTable.Where(x => x.User == userId && x.RatingScore > 0).Select(x => x.Item);
+            var currentUserRecommend = UserItemTable.Where(x => x.User == userId && x.RatingScore > 0).Select(x => x.Item).ToList();
 
             if (similarity == null)
             {
@@ -81,9 +81,12 @@ namespace RecommendAlgorithm.Recommendation
                     break;
                 }
 
-                var closeUserRecommendation = UserItemTable.Where(x => x.User == item.Key 
-                        && !currentUserRecommend.Contains(x.Item) 
-                        && !RecommendationKeys.Contains(x.Item)).Take(7).Select(x => x.Item);
+                var closeUserRecommendationTemp = UserItemTable.Where(x => x.User == item.Key).ToList();
+
+                var closeUserRecommendation = closeUserRecommendationTemp.Where(x => 
+                        !currentUserRecommend.Contains(x.Item) 
+                        && x.RatingScore > 7
+                        && !RecommendationKeys.Contains(x.Item)).Take(3).Select(x => x.Item).ToList();
                 if (RecommendationKeys.Count + closeUserRecommendation.Count() > numberOfRecommendToGet)
                 {
                     RecommendationKeys.AddRange(closeUserRecommendation.Take(RecommendationKeys.Count + closeUserRecommendation.Count() - numberOfRecommendToGet));
